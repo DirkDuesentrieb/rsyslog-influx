@@ -41,7 +41,7 @@ template(
 )
 set $!msg = replace($msg, "\"", "'");
 if $programname != 'influxd' then {
-  action(type="omfwd" Protocol="udp" Target="h2" Port="8089"  Template="Influx")
+  action(type="omfwd" Protocol="udp" Target="localhost" Port="8089"  Template="Influx")
 }
 
 ```
