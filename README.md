@@ -5,7 +5,7 @@ I tested the [suggested rsyslog integration with Telegraf](https://github.com/in
 ```
 action 'action 1' resumed (module 'builtin:omfwd')
 ```
-I wasn't able to fix the root cause and decided to use a different approach. My setup uses a template and the [Influx UDP Input](https://docs.influxdata.com/influxdb/v1.7/supported_protocols/udp/) to deliver the data directly into a database. It runs smooth without reducing functionality.
+I wasn't able to fix the root cause and decided to use a different approach. My setup uses a log template and the [Influx UDP Input](https://docs.influxdata.com/influxdb/v1.7/supported_protocols/udp/) to deliver the data directly into a database. It runs smooth without reducing functionality.
 
 # Setup 
 ## 1.) Enable UDP Input for Influxdb
@@ -37,7 +37,7 @@ This logging template writes into a measurement called **syslog**. Rename it if 
 Restart rsyslog if you are done.
 
 ### rsyslog configuration for the Influx host itself
-If you want to collect data on the host running the InfluxDB you need a slightly different configuration to ao avoid a logging feedback loop. Here it is necessary to exclude influxd logs from the forwarding.
+If you want to collect data on the host running the InfluxDB you need a slightly different configuration to avoid a logging feedback loop. Here it is necessary to exclude influxd logs from the forwarding.
 ```
 template(
   SAME AS ABOVE
@@ -58,7 +58,7 @@ Enter an InfluxQL query
 > use udp   (or your DB name)
 Using database udp
 > select * from syslog limit 3
-name: dsyslog
+name: syslog
 time                appname facility facility_code hostname message                                                          procid severity severity_code
 ----                ------- -------- ------------- -------- -------                                                          ------ -------- -------------
 1550679421543669928 CRON    authpriv 10            colector  pam_unix(cron:session): session opened for user root by (uid=0) 3317   info     6
@@ -66,7 +66,7 @@ time                appname facility facility_code hostname message             
 1550679421546549914 CRON    authpriv 10            colector  pam_unix(cron:session): session closed for user root            3317   info     6
 ```
 
-The written data filds and keys are based on Telegrafs syslog measurement. Dashboards and queries should work as before. 
+The written data fields and tags are based on Telegrafs syslog measurement. Dashboards and queries should work as before. 
 ```
 > show field keys from syslog
 name: syslog
