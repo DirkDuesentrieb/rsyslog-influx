@@ -34,9 +34,10 @@ set $!msg = replace($msg, "\"", "'");
 action(type="omfwd" Protocol="udp" Target="<your influx server>" Port="8089"  Template="Influx")
 ```
 This logging template writes into a measurement called **syslog**. Rename it if you like. 
+Restart rsyslog if you are done.
 
 ### rsyslog configuration for the Influx host itself
-To avoid a logging feedback loop it is necessary to exclude influxd logs from the forwarding.
+If you want to collect data on the host running the InfluxDB you need a slightly different configuration to ao avoid a logging feedback loop. Here it is necessary to exclude influxd logs from the forwarding.
 ```
 template(
   SAME AS ABOVE
@@ -45,10 +46,26 @@ set $!msg = replace($msg, "\"", "'");
 if $programname != 'influxd' then {
   action(type="omfwd" Protocol="udp" Target="localhost" Port="8089"  Template="Influx")
 }
-
 ```
 
 # Using the measurement
+A simple test to check if your setup works is to ask the database directly. 
+```
+root@collector ~ # influx
+Connected to http://localhost:8086 version 1.7.1
+InfluxDB shell version: 1.7.1
+Enter an InfluxQL query
+> use udp   (or your DB name)
+Using database udp
+> select * from syslog limit 3
+name: dsyslog
+time                appname facility facility_code hostname message                                                          procid severity severity_code
+----                ------- -------- ------------- -------- -------                                                          ------ -------- -------------
+1550679421543669928 CRON    authpriv 10            colector  pam_unix(cron:session): session opened for user root by (uid=0) 3317   info     6
+1550679421545719847 CRON    cron     9             colector  (root) CMD (   cd / && run-parts --report /etc/cron.hourly)     3318   info     6
+1550679421546549914 CRON    authpriv 10            colector  pam_unix(cron:session): session closed for user root            3317   info     6
+```
+
 The written data filds and keys are based on Telegrafs syslog measurement. Dashboards and queries should work as before. 
 ```
 > show field keys from syslog
